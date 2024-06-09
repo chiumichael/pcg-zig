@@ -49,7 +49,7 @@ pub fn build(b: *std.Build) !void {
         .files = srcs,
     });
 
-    lib.addIncludePath(.{ .path = "pcg-c/include" });
+    lib.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
 
     // This declares intent for the library to be installed into the standard
     // location when the user invokes the "install" step (the default step when
@@ -62,6 +62,12 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+
+    const test_srcs = &.{
+        "pcg-c/test-high/check-base.c",
+    };
+
+    _ = test_srcs;
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
