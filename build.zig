@@ -11,10 +11,6 @@ pub fn build(b: *std.Build) !void {
         .optimize = .ReleaseFast,
     });
 
-    var flags = std.ArrayList([]const u8).init(b.allocator);
-    defer flags.deinit();
-    try flags.appendSlice(&.{ "-std=c99", "-03" });
-
     const srcs = &.{
         "pcg-c/src/pcg-rngs-8.c",
         "pcg-c/src/pcg-rngs-16.c",
@@ -82,9 +78,6 @@ pub fn build(b: *std.Build) !void {
     entropy_obj.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
     entropy_obj.linkLibC();
 
-    // const c_flags = [_][]const u8{"-std=c99"};
-
-    // TODO: refactor into a function
     inline for (targets_test_high) |target_name| {
         const exe = b.addExecutable(.{
             .name = target_name,
@@ -106,12 +99,6 @@ pub fn build(b: *std.Build) !void {
         exe.linkLibrary(lpcg_random);
 
         b.installArtifact(exe);
-
-        const run_cmd = b.addRunArtifact(exe);
-        run_cmd.step.dependOn(b.getInstallStep());
-
-        const run_step = b.step(target_name, "Run ");
-        run_step.dependOn(&run_cmd.step);
     }
 
     // test-low
@@ -216,12 +203,6 @@ pub fn build(b: *std.Build) !void {
         exe.linkLibrary(lpcg_random);
 
         b.installArtifact(exe);
-
-        const run_cmd = b.addRunArtifact(exe);
-        run_cmd.step.dependOn(b.getInstallStep());
-
-        const run_step = b.step(target_name, "Run ");
-        run_step.dependOn(&run_cmd.step);
     }
 
     // sample
@@ -252,14 +233,5 @@ pub fn build(b: *std.Build) !void {
         exe.linkLibrary(lpcg_random);
 
         b.installArtifact(exe);
-
-        const run_cmd = b.addRunArtifact(exe);
-        run_cmd.step.dependOn(b.getInstallStep());
-
-        const run_step = b.step(target_name, "Run ");
-        run_step.dependOn(&run_cmd.step);
     }
-
-    const test_step = b.step("Test", "Run all tests");
-    _ = test_step;
 }
