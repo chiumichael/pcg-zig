@@ -243,15 +243,24 @@ pub fn build(b: *std.Build) !void {
         });
 
         exe.addCSourceFiles(.{
-            .root = .{ .cwd_relative = "pcg-c/test-low" },
+            .root = .{ .cwd_relative = "pcg-c/sample" },
             .files = &.{target_name ++ ".c"},
             .flags = &.{"-std=c99"},
         });
 
         exe.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
         exe.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
+        exe.addObject(entropy_obj);
         exe.linkLibC();
         exe.linkLibrary(lpcg_random);
+
+        b.installArtifact(exe);
+
+        const run_cmd = b.addRunArtifact(exe);
+        run_cmd.step.dependOn(b.getInstallStep());
+
+        const run_step = b.step(target_name, "Run ");
+        run_step.dependOn(&run_cmd.step);
     }
 
     const test_step = b.step("Test", "Run all tests");
