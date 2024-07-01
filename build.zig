@@ -8,7 +8,7 @@ pub fn build(b: *std.Build) !void {
         .name = "pcg_random",
         .root_source_file = null,
         .target = target,
-        .optimize = optimize,
+        .optimize = .ReleaseFast,
     });
 
     var flags = std.ArrayList([]const u8).init(b.allocator);
@@ -107,7 +107,6 @@ pub fn build(b: *std.Build) !void {
         exe.addObject(entropy_obj);
         exe.linkLibC();
         exe.linkLibrary(lpcg_random);
-        // exe.addLibraryPath(.{ .cwd_relative = "pcg-c/src" });
 
         b.installArtifact(exe);
 
@@ -214,6 +213,7 @@ pub fn build(b: *std.Build) !void {
         exe.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
         exe.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
         exe.addIncludePath(.{ .cwd_relative = "pcg-c/test-low" });
+        //exe.addLibraryPath(.{ .cwd_relative = "pcg-c/src" });
         exe.addObject(entropy_obj);
         exe.linkLibC();
         exe.linkLibrary(lpcg_random);
