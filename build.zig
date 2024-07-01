@@ -227,6 +227,33 @@ pub fn build(b: *std.Build) !void {
         run_step.dependOn(&run_cmd.step);
     }
 
+    // sample
+    const targets_sample = [_][]const u8{
+        "pcg32-demo",
+        "pcg32-global-demo",
+        "pcg32x2-demo",
+        "pcg64-demo",
+    };
+
+    inline for (targets_sample) |target_name| {
+        const exe = b.addExecutable(.{
+            .name = target_name,
+            .target = target,
+            .optimize = optimize,
+        });
+
+        exe.addCSourceFiles(.{
+            .root = .{ .cwd_relative = "pcg-c/test-low" },
+            .files = &.{target_name ++ ".c"},
+            .flags = &.{"-std=c99"},
+        });
+
+        exe.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
+        exe.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
+        exe.linkLibC();
+        exe.linkLibrary(lpcg_random);
+    }
+
     const test_step = b.step("Test", "Run all tests");
     _ = test_step;
 
