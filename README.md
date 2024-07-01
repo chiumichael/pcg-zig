@@ -28,8 +28,12 @@ exe.linkLibrary(libpcg.artifact("pcg"));
 
 Then you can easily `@cImport` the project. 
 
-### Tests
+## Tests
 
 The two test scripts `run-test-high-tests.sh` and `run-test-low-tests.sh`
 are adapted from the the original `pcp-c` project. 
 Run the test scripts to double-check that the libraries have built correctly.
+
+## Upstream versions
+
+This project will try to stay up to date with the upstream.
