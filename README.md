@@ -2,7 +2,8 @@
 
 This project builds [pcg-c](https://github.com/imneme/pcg-c) with Zig.
 These are _not_ Zig bindings to the project. pcg-c is a straightforward
-library so 
+library so bindings wouldn't be that much more convenient than calling 
+them straight from Zig thanks to Zig's awesome C interoperability.
 
 ## Usage
 
