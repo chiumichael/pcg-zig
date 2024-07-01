@@ -94,15 +94,7 @@ pub fn build(b: *std.Build) !void {
             .target = target,
             .optimize = optimize,
         });
-        // exe.addLibraryPath(.{ .cwd_relative = "pcg-c/src/test-high" });
-        // exe.addCSourceFile(.{
-        //     .file = .{ .cwd_relative = "pcg-c/test-high/" ++ target_name ++ ".c" },
-        //     .flags = &.{ "-std=c99", "-include", "pcg-c/test-high/check-base.c" },
-        // });
-        // exe.addCSourceFile(.{
-        //     .file = .{ .cwd_relative = "pcg-c/test-high/check-base.c" },
-        //     .flags = &c_flags,
-        // });
+
         exe.addCSourceFiles(.{
             .root = .{ .cwd_relative = "pcg-c/test-high" },
             .files = &.{target_name ++ ".c"},
@@ -116,6 +108,115 @@ pub fn build(b: *std.Build) !void {
         exe.linkLibC();
         exe.linkLibrary(lpcg_random);
         // exe.addLibraryPath(.{ .cwd_relative = "pcg-c/src" });
+
+        b.installArtifact(exe);
+
+        const run_cmd = b.addRunArtifact(exe);
+        run_cmd.step.dependOn(b.getInstallStep());
+
+        const run_step = b.step(target_name, "Run ");
+        run_step.dependOn(&run_cmd.step);
+    }
+
+    // test-low
+    const targets_test_low = [_][]const u8{
+        "check-mcg-128-rxs-m-64",
+        "check-mcg-128-xsh-rr-64",
+        "check-mcg-128-xsh-rs-64",
+        "check-mcg-128-xsl-rr-64",
+        "check-mcg-16-rxs-m-8",
+        "check-mcg-16-xsh-rr-8",
+        "check-mcg-16-xsh-rs-8",
+        "check-mcg-32-rxs-m-16",
+        "check-mcg-32-xsh-rr-16",
+        "check-mcg-32-xsh-rs-16",
+        "check-mcg-64-rxs-m-32",
+        "check-mcg-64-xsh-rr-32",
+        "check-mcg-64-xsh-rs-32",
+        "check-mcg-64-xsl-rr-32",
+        "check-oneseq-128-rxs-m-64",
+        "check-oneseq-128-rxs-m-xs-128",
+        "check-oneseq-128-xsh-rr-64",
+        "check-oneseq-128-xsh-rs-64",
+        "check-oneseq-128-xsl-rr-64",
+        "check-oneseq-128-xsl-rr-rr-128",
+        "check-oneseq-16-rxs-m-8",
+        "check-oneseq-16-rxs-m-xs-16",
+        "check-oneseq-16-xsh-rr-8",
+        "check-oneseq-16-xsh-rs-8",
+        "check-oneseq-32-rxs-m-16",
+        "check-oneseq-32-rxs-m-xs-32",
+        "check-oneseq-32-xsh-rr-16",
+        "check-oneseq-32-xsh-rs-16",
+        "check-oneseq-64-rxs-m-32",
+        "check-oneseq-64-rxs-m-xs-64",
+        "check-oneseq-64-xsh-rr-32",
+        "check-oneseq-64-xsh-rs-32",
+        "check-oneseq-64-xsl-rr-32",
+        "check-oneseq-64-xsl-rr-rr-64",
+        "check-oneseq-8-rxs-m-xs-8",
+        "check-setseq-128-rxs-m-64",
+        "check-setseq-128-rxs-m-xs-128",
+        "check-setseq-128-xsh-rr-64",
+        "check-setseq-128-xsh-rs-64",
+        "check-setseq-128-xsl-rr-64",
+        "check-setseq-128-xsl-rr-rr-128",
+        "check-setseq-16-rxs-m-8",
+        "check-setseq-16-rxs-m-xs-16",
+        "check-setseq-16-xsh-rr-8",
+        "check-setseq-16-xsh-rs-8",
+        "check-setseq-32-rxs-m-16",
+        "check-setseq-32-rxs-m-xs-32",
+        "check-setseq-32-xsh-rr-16",
+        "check-setseq-32-xsh-rs-16",
+        "check-setseq-64-rxs-m-32",
+        "check-setseq-64-rxs-m-xs-64",
+        "check-setseq-64-xsh-rr-32",
+        "check-setseq-64-xsh-rs-32",
+        "check-setseq-64-xsl-rr-32",
+        "check-setseq-64-xsl-rr-rr-64",
+        "check-setseq-8-rxs-m-xs-8",
+        "check-unique-128-rxs-m-64",
+        "check-unique-128-rxs-m-xs-128",
+        "check-unique-128-xsh-rr-64",
+        "check-unique-128-xsh-rs-64",
+        "check-unique-128-xsl-rr-64",
+        "check-unique-128-xsl-rr-rr-128",
+        "check-unique-16-rxs-m-8",
+        "check-unique-16-rxs-m-xs-16",
+        "check-unique-16-xsh-rr-8",
+        "check-unique-16-xsh-rs-8",
+        "check-unique-32-rxs-m-16",
+        "check-unique-32-rxs-m-xs-32",
+        "check-unique-32-xsh-rr-16",
+        "check-unique-32-xsh-rs-16",
+        "check-unique-64-rxs-m-32",
+        "check-unique-64-rxs-m-xs-64",
+        "check-unique-64-xsh-rr-32",
+        "check-unique-64-xsh-rs-32",
+        "check-unique-64-xsl-rr-32",
+        "check-unique-64-xsl-rr-rr-64",
+    };
+
+    inline for (targets_test_low) |target_name| {
+        const exe = b.addExecutable(.{
+            .name = target_name,
+            .target = target,
+            .optimize = optimize,
+        });
+
+        exe.addCSourceFiles(.{
+            .root = .{ .cwd_relative = "pcg-c/test-low" },
+            .files = &.{target_name ++ ".c"},
+            .flags = &.{"-std=c99"},
+        });
+
+        exe.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
+        exe.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
+        exe.addIncludePath(.{ .cwd_relative = "pcg-c/test-low" });
+        exe.addObject(entropy_obj);
+        exe.linkLibC();
+        exe.linkLibrary(lpcg_random);
 
         b.installArtifact(exe);
 
