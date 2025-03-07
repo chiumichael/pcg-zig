@@ -1,6 +1,8 @@
 .{
-    .name = "pcg-zig",
-    .version = "0.0.0",
+    .name = .pcgzig,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.13.0",
+    .fingerprint = 0xfc0ca7d6240fd389,
     .dependencies = .{},
     .paths = .{
         "",
