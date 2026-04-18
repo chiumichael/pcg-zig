@@ -4,11 +4,10 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const lpcg_random = b.addStaticLibrary(.{
-        .name = "pcg_random",
-        .root_source_file = null,
+    const pcg_random_mod = b.createModule(.{
         .target = target,
         .optimize = .ReleaseFast,
+        .link_libc = true,
     });
 
     const srcs = &.{
@@ -31,13 +30,17 @@ pub fn build(b: *std.Build) !void {
         "pcg-c/src/pcg-advance-128.c",
     };
 
-    lpcg_random.addCSourceFiles(.{
+    pcg_random_mod.addCSourceFiles(.{
         .files = srcs,
         .flags = &.{ "-std=c99", "-O3" },
     });
-    lpcg_random.linkLibC();
+    pcg_random_mod.addIncludePath(b.path("pcg-c/include"));
 
-    lpcg_random.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
+    const lpcg_random = b.addLibrary(.{
+        .name = "pcg_random",
+        .linkage = .static,
+        .root_module = pcg_random_mod,
+    });
 
     b.installArtifact(lpcg_random);
 
@@ -64,39 +67,46 @@ pub fn build(b: *std.Build) !void {
         "check-pcg64-global",
     };
 
-    const entropy_obj = b.addObject(.{
-        .name = "entropy",
+    const entropy_mod = b.createModule(.{
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
-
-    entropy_obj.addCSourceFiles(.{
+    entropy_mod.addCSourceFiles(.{
         .files = &.{"pcg-c/extras/entropy.c"},
         .flags = &.{"-std=c99"},
     });
-    entropy_obj.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
-    entropy_obj.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
-    entropy_obj.linkLibC();
+    entropy_mod.addIncludePath(b.path("pcg-c/include"));
+    entropy_mod.addIncludePath(b.path("pcg-c/extras"));
+
+    const entropy_obj = b.addObject(.{
+        .name = "entropy",
+        .root_module = entropy_mod,
+    });
 
     inline for (targets_test_high) |target_name| {
-        const exe = b.addExecutable(.{
-            .name = target_name,
+        const mod = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         });
 
-        exe.addCSourceFiles(.{
-            .root = .{ .cwd_relative = "pcg-c/test-high" },
+        mod.addCSourceFiles(.{
+            .root = b.path("pcg-c/test-high"),
             .files = &.{target_name ++ ".c"},
             .flags = &.{"-std=c99"},
         });
 
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/test-high" });
-        exe.addObject(entropy_obj);
-        exe.linkLibC();
-        exe.linkLibrary(lpcg_random);
+        mod.addIncludePath(b.path("pcg-c/include"));
+        mod.addIncludePath(b.path("pcg-c/extras"));
+        mod.addIncludePath(b.path("pcg-c/test-high"));
+        mod.addObject(entropy_obj);
+        mod.linkLibrary(lpcg_random);
+
+        const exe = b.addExecutable(.{
+            .name = target_name,
+            .root_module = mod,
+        });
 
         b.installArtifact(exe);
     }
@@ -182,25 +192,28 @@ pub fn build(b: *std.Build) !void {
     };
 
     inline for (targets_test_low) |target_name| {
-        const exe = b.addExecutable(.{
-            .name = target_name,
+        const mod = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         });
 
-        exe.addCSourceFiles(.{
-            .root = .{ .cwd_relative = "pcg-c/test-low" },
+        mod.addCSourceFiles(.{
+            .root = b.path("pcg-c/test-low"),
             .files = &.{target_name ++ ".c"},
             .flags = &.{"-std=c99"},
         });
 
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/test-low" });
-        //exe.addLibraryPath(.{ .cwd_relative = "pcg-c/src" });
-        exe.addObject(entropy_obj);
-        exe.linkLibC();
-        exe.linkLibrary(lpcg_random);
+        mod.addIncludePath(b.path("pcg-c/include"));
+        mod.addIncludePath(b.path("pcg-c/extras"));
+        mod.addIncludePath(b.path("pcg-c/test-low"));
+        mod.addObject(entropy_obj);
+        mod.linkLibrary(lpcg_random);
+
+        const exe = b.addExecutable(.{
+            .name = target_name,
+            .root_module = mod,
+        });
 
         b.installArtifact(exe);
     }
@@ -214,23 +227,27 @@ pub fn build(b: *std.Build) !void {
     };
 
     inline for (targets_sample) |target_name| {
-        const exe = b.addExecutable(.{
-            .name = target_name,
+        const mod = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         });
 
-        exe.addCSourceFiles(.{
-            .root = .{ .cwd_relative = "pcg-c/sample" },
+        mod.addCSourceFiles(.{
+            .root = b.path("pcg-c/sample"),
             .files = &.{target_name ++ ".c"},
             .flags = &.{"-std=c99"},
         });
 
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/include" });
-        exe.addIncludePath(.{ .cwd_relative = "pcg-c/extras" });
-        exe.addObject(entropy_obj);
-        exe.linkLibC();
-        exe.linkLibrary(lpcg_random);
+        mod.addIncludePath(b.path("pcg-c/include"));
+        mod.addIncludePath(b.path("pcg-c/extras"));
+        mod.addObject(entropy_obj);
+        mod.linkLibrary(lpcg_random);
+
+        const exe = b.addExecutable(.{
+            .name = target_name,
+            .root_module = mod,
+        });
 
         b.installArtifact(exe);
     }
